@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import numpy as np
 import os
 
-package_data = {'adm-code':['notebooks/*.ipynb', 'data/*.csv']}
+package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
 setup(
     name='AdaptiveDecisionMaking_2018',
@@ -10,7 +10,7 @@ setup(
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
     url='http://github.com/CoAxLab/AdaptiveDecisionMaking_2018',
-    packages=['adm-code'],
+    packages=['ADMCode'],
     package_data=package_data,
     description='Code and lab resources for Neural and Cognitive Models of Adaptive Decision Making course (2018)',
     install_requires=['numpy', 'scipy', 'pandas', 'matplotlib', 'seaborn', 'scikit-learn', 'numba', 'future'],
