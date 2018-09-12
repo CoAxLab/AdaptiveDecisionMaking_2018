@@ -5,7 +5,7 @@ import os
 package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
 setup(
-    name='AdaptiveDecisionMaking_2018',
+    name='ADMCode',
     version='0.0.1',
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
