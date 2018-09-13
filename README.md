@@ -28,11 +28,11 @@ Repository for code and lab resources for "Neural and Cognitive Models of Adapti
 ```bash
 # check that your system is now using anaconda's version of python
 $ which python
-/Users/kyle/anaconda3/bin/python
+# example output --> /Users/kyle/anaconda3/bin/python
 
 # and that you installed Python 3.6
 $ python -V
-Python 3.6.0 :: Anaconda custom (64-bit)
+# example output --> Python 3.6.0 :: Anaconda custom (64-bit)
 ```
 
 
