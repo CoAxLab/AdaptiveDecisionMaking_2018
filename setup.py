@@ -6,7 +6,7 @@ package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
 setup(
     name='ADMCode',
-    version='0.0.2',
+    version='0.0.3',
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
     url='http://github.com/CoAxLab/AdaptiveDecisionMaking_2018',
