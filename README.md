@@ -15,7 +15,7 @@ Repository for code and lab resources for "Neural and Cognitive Models of Adapti
   - [**seaborn**](https://seaborn.pydata.org/): wrapper for making matplotlib pretty, plays nice w/ pandas ([tutorial](https://elitedatascience.com/python-seaborn-tutorial))
   - [**and more...** ](https://docs.anaconda.com/anaconda/packages/pkg-docs/)
 
-- Install **Anaconda** with **Python 3.6 **:
+- Install **Anaconda** with **Python 3.6**:
 
   - [**OSX**](https://www.anaconda.com/download/#macos)
   - [**Linux**](https://www.anaconda.com/download/#linux)
@@ -28,11 +28,11 @@ Repository for code and lab resources for "Neural and Cognitive Models of Adapti
 ```bash
 # check that your system is now using anaconda's version of python
 $ which python
-# example output --> /Users/kyle/anaconda3/bin/python
+# output: /Users/kyle/anaconda3/bin/python
 
 # and that you installed Python 3.6
 $ python -V
-# example output --> Python 3.6.0 :: Anaconda custom (64-bit)
+# output: Python 3.6.0 :: Anaconda custom (64-bit)
 ```
 
 
