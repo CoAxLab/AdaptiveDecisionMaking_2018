@@ -1,9 +1,5 @@
 import numpy as np
 import pandas as pd
-import patsy
-import pymc3 as pm
-import theano
-import theano.tensor as T
 from scipy.stats import norm
 from scipy.signal import detrend
 
