@@ -11,7 +11,7 @@ __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(
     name='ADMCode',
-    version=__version__
+    version=__version__,
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
     url='http://github.com/CoAxLab/AdaptiveDecisionMaking_2018',
