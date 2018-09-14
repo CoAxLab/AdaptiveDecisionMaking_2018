@@ -4,9 +4,14 @@ import os
 
 package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
+major = 0
+minor = 0
+patch = 4
+__version__ = '.'.join([str(v) for v in [major, minor, patch]])
+
 setup(
     name='ADMCode',
-    version='0.0.3',
+    version=__version__
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
     url='http://github.com/CoAxLab/AdaptiveDecisionMaking_2018',
