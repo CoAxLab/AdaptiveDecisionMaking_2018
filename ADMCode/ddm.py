@@ -6,7 +6,7 @@ from numba.decorators import jit
 from numba import float64, int64, vectorize, boolean
 
 
-def gen_ddm_storage_objects(a, tr, v, z, si=.1, dt=.0005, ntrials=200, deadline=1.2):
+def gen_ddm_storage_objects(a, tr, v, z, si=.1, dt=.001, ntrials=200, deadline=1.5):
 
     dx = si * np.sqrt(dt)
     parameters = np.array([a, tr, v, z, si, dx, dt])
@@ -33,7 +33,7 @@ def clean_output(data, traces, deadline=1.2):
     return df, traces
 
 
-@jit(nb.typeof((1.0, 1))(float64[:], float64[:], float64[:]), nopython=True)
+@jit(nb.typeof((1.0, 1.0))(float64[:], float64[:], float64[:]), nopython=True)
 def sim_ddm_trace(rProb, trace, parameters):
 
     a, tr, v, z, si, dx, dt = parameters
@@ -53,8 +53,16 @@ def sim_ddm_trace(rProb, trace, parameters):
         trace[nsteps] = evidence
 
         if evidence >= a:
-            return tr + (nsteps * dt), 1
+            return tr + (nsteps * dt), 1.0
         elif evidence <= 0:
-            return tr + (nsteps * dt), 0
+            return tr + (nsteps * dt), 0.0
 
-    return -1.0, -1
+    return -1.0, -1.0
+
+
+@jit((float64[:], float64[:,:], float64[:,:], float64[:,:]), nopython=True)
+def sim_ddm_trials(parameters, data, rProb, traces):
+
+    ntrials = data.shape[0]
+    for t in range(ntrials):
+        data[t, :] = sim_ddm_trace(rProb[t], traces[t], parameters)

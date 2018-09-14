@@ -65,7 +65,7 @@ def plot_ddm_traces(df, traces, parameters, colors=['#3572C6', '#e5344a'], plot_
                 clip=(rt0.min(), rt0.max()), bw=35)
 
     axx1.set_ylim(0, .004)
-    axx2.set_ylim(.02, 0.0002)
+    axx2.set_ylim(.004, 0.0)
     delay = np.ones(trSteps) * zStart
 
     for i in range(int(df.shape[0]/2)):
@@ -122,6 +122,6 @@ def compare_drift_effects(dataframes, param_list, colors=["#3498db", "#f19b2c", 
         x = np.linspace(trSteps, rt1.mean(), accum_x.size)
         ax.plot(x, driftRate, color=c, linewidth=3.5)
 
-    axx1.set_ylim(0, .005)
-    axx2.set_ylim(.02, 0.0001)
+    axx1.set_ylim(0.0, .004)
+    axx2.set_ylim(.004, 0.0)
     return ax
