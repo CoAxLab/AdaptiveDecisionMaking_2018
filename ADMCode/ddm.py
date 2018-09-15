@@ -17,7 +17,13 @@ def gen_ddm_storage_objects(a, tr, v, z, si=.1, dt=.001, ntrials=200, deadline=1
     return parameters, rProb, traces
 
 
+
 def clean_output(data, traces, deadline=1.2):
+    """ create pandas dataframes from data (numpy array)
+    and filter data/traces to remove failed decision trials
+    ::Arguments::
+    data:
+    """
     # store RT/choice matrix in a pandas dataframe (DF)
     df = pd.DataFrame(data, columns=['rt', 'choice'])
 

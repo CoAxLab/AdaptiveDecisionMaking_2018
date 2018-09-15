@@ -4,35 +4,33 @@ from scipy.stats import norm
 from scipy.signal import detrend
 
 
-def sdt_mle(f, h, m, r):
+def sdt_mle(h, m, cr, fa):
+
     """Calculates maximum-likelihood estimates of sensitivity and bias.
 
     Args:
-        f: False alarms.
-        h: Hits.
-        m: Misses.
-        r: Correct rejections.
+        h: Hits
+        m: Misses
+        cr: Correct Rejections.
+        fa: False Alarms
 
     Returns:
-        [(d1, c1) ...]
+        d (d-prime)
+        c (criterion)
 
     """
-    out = []
-    for _f, _h, _m, _r in zip(f, h, m, r):
 
-        n0, n1 = float(_f + _r), float(_h + _m)
-        if _f == 0:
-            _f += 0.5
-        if _f == n0:
-            _f -= 0.5
-        if _h == 0:
-            _h += 0.5
-        if _h == n1:
-            _h -= 0.5
+    H, M, CR, FA, = h, m, cr, fa
 
-        fhat = _f / float(n0)
-        hhat = _h / float(n1)
-        d = norm.ppf(hhat) - norm.ppf(fhat)
-        c = -0.5 * (norm.ppf(hhat) + norm.ppf(fhat))
-        out.append((d, c))
-    return out
+    n0, n1 = float(FA + CR), float(H + M)
+    if FA == 0: FA += 0.5
+    if FA == n0: FA -= 0.5
+    if H == 0:  H += 0.5
+    if H == n1: H -= 0.5
+
+    pFA = FA / float(n0)
+    pH = H / float(n1)
+    d = norm.ppf(pH) - norm.ppf(pFA)
+    c = -0.5 * (norm.ppf(pH) + norm.ppf(pFA))
+
+    return d, c
