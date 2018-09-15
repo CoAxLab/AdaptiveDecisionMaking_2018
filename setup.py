@@ -6,7 +6,7 @@ package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
 major = 0
 minor = 0
-patch = 5
+patch = 6
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(
