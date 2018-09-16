@@ -2,16 +2,26 @@ from __future__ import division
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy.stats import norm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from ADMCode import sdt
 import matplotlib.pyplot as plt
 
+def convert_params(parameters, maxtime=1.5):
+    a, tr, v, z, si, dx, dt = parameters
+    zStart = z * a
+    trSteps = int(tr/dt)
+    deadline = (maxtime / dt) * 1.1
+    return a, trSteps, v, zStart, si, dx, dt, deadline
 
-def build_ddm_axis(a, tr, z, tb=1200):
+
+def build_ddm_axis(parameters, maxtime=1.5):
 
     sns.set(style='white')
     f, ax = plt.subplots(1, figsize=(8.5, 7), sharex=True)
-    w = tb
-    # tr = tr - 50
+
+    a, tr, v, z, si, dx, dt, deadline = convert_params(parameters, maxtime)
+    w = deadline
     xmin=tr - 100
 
     plt.setp(ax, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
@@ -26,16 +36,15 @@ def build_ddm_axis(a, tr, z, tb=1200):
     ax.set_xticks([])
     ax.set_yticks([])
     sns.despine(top=True, right=True, bottom=True, left=True, ax=ax)
-    divider = make_axes_locatable(ax)
 
+    divider = make_axes_locatable(ax)
     axx1 = divider.append_axes("top", size=1.2, pad=0.0, sharex=ax)
     axx2 = divider.append_axes("bottom", size=1.2, pad=0.0, sharex=ax)
-
     plt.setp(axx1, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
     plt.setp(axx2, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
 
-    axx1.hist([0], normed=False, bins=np.linspace(200, tb, num=9), alpha=1., color='White')
-    axx2.hist([0], normed=False, bins=np.linspace(200, tb, num=9), alpha=1., color='White')
+    axx1.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
+    axx2.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
 
     for axx in [axx1, axx2]:
         for spine in ['top', 'left', 'bottom', 'right']:
@@ -45,83 +54,120 @@ def build_ddm_axis(a, tr, z, tb=1200):
     return f, [ax, axx1, axx2]
 
 
-def plot_ddm_traces(df, traces, parameters, colors=['#3572C6', '#e5344a'], plot_v=False, deadline=1.2):
 
-    a, tr, v, z, si, dx, dt = parameters
-    deadline=traces.shape[1]
-    zStart = z * a
-    trSteps = int(tr/dt)
+def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=None, vcolor='k'):
 
+    maxtime = df.rt.max()
+    a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters, maxtime)
+
+    if colors is None:
+        colors = ['#3572C6', '#e5344a']
+    if fig is None:
+        f, axes = build_ddm_axis(parameters, maxtime)
+    else:
+        f = fig; axes = fig.axes
+
+    plot_bound_rts(df, parameters, f=f, colors=colors)
+
+    if traces is not None:
+        plot_traces(df, parameters, traces, f=f, colors=colors)
+
+    if plot_v:
+        plot_drift_line(df, parameters, color=vcolor, ax=f.axes[0])
+
+    return f
+
+
+def compare_drift_effects(dataframes, param_list, colors=["#3498db", "#f19b2c", '#009e07', '#3572C6', '#e5344a', "#9B59B6"]):
+
+    maxtime = pd.concat(dataframes).rt.max()
+    a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(param_list[0], maxtime)
+    f=None
+    for i, df in enumerate(dataframes):
+        clrs = [colors[i]]*2
+        f = plot_ddm_sims(df, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0])
+
+    ax, axx1, axx2 = f.axes
+    xmin = trSteps-100
+    ax.hlines(y=a, xmin=xmin, xmax=deadline, color='k', linewidth=4)
+    ax.hlines(y=0, xmin=xmin, xmax=deadline, color='k', linewidth=4)
+    axx1.set_ylim(0, .008)
+    axx2.set_ylim(.008, 0.0)
+    return ax
+
+
+def plot_bound_rts(df, parameters, f, colors=None):
+
+    a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters)
     rt1 = df[df.choice==1].rt.values / dt
     rt0 = df[df.choice==0].rt.values / dt
 
-    f, axes = build_ddm_axis(a, trSteps, zStart, tb=deadline)
-    ax, axx1, axx2 = axes
+    if colors is None:
+        colors = ['#3572C6', '#e5344a']
+    ax, axx1, axx2 = f.axes
+    clip = (df.rt.min()/dt, deadline)
+    sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True,
+                clip=clip, bw=15)
+    sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True,
+                clip=clip, bw=15)
 
-    clr1, clr0 = colors
-    sns.kdeplot(rt1, alpha=.5, linewidth=0, color=clr1, ax=axx1, shade=True,
-                clip=(rt1.min(), rt1.max()), bw=35)
-    sns.kdeplot(rt0, alpha=.5, linewidth=0, color=clr0, ax=axx2, shade=True,
-                clip=(rt0.min(), rt0.max()), bw=35)
+    ymax = (.0035, .01)
+    if rt1.size < rt0.size:
+        ymax = (.01, .0035)
+    axx1.set_ylim(0, ymax[0])
+    axx2.set_ylim(ymax[1], 0.0)
 
-    axx1.set_ylim(0, .004)
-    axx2.set_ylim(.004, 0.0)
-    delay = np.ones(trSteps) * zStart
 
-    for i in range(int(df.shape[0]/2)):
+def plot_traces(df, parameters, traces, f, colors):
+
+    a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters)
+    ax = f.axes[0]
+    ntrials = int(traces.shape[0])
+    for i in range(ntrials):
         trace = traces[i]
-        c = clr1
+        c = colors[0]
         nsteps = np.argmax(trace[trace<=a]) + 2
         if df.iloc[i]['choice']==0:
-            c = clr0
+        # if trace[nsteps]<zStart:
+            c = colors[1]
             nsteps = np.argmin(trace[trace>=0]) + 2
-
-        y = np.hstack([delay, trace[:nsteps]])
-        x = np.arange(delay.size, y.size)
-        ax.plot(x, trace[:nsteps], color=c, alpha=.19)
-
-    if plot_v:
-        accum_x = np.arange(rt1.mean())*.001
-        driftRate = zStart + (accum_x * v)
-        x = np.linspace(trSteps, rt1.mean(), accum_x.size)
-        ax.plot(x, driftRate, color='k', linewidth=3)
-    return ax
+        ax.plot(np.arange(trSteps, trSteps + nsteps), traces[i, :nsteps], color=c, alpha=.1)
 
 
+def plot_drift_line(df, parameters, color='k', ax=None):
 
-def compare_drift_effects(dataframes, param_list, colors=["#3498db", "#f19b2c", '#009e07', '#3572C6', '#e5344a', "#9B59B6"], deadline=1.2):
+    a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters)
+    rt = np.mean(df[df.choice==1].rt.values / dt)
+    if v<0:
+        rt = np.mean(df[df.choice==0].rt.values / dt)
+    accum_x = np.arange(rt)*.001
+    driftRate = zStart + (accum_x * v)
+    x = np.linspace(trSteps, rt, accum_x.size)
+    ax.plot(x, driftRate, color=color, linewidth=3)
 
-    a, tr, v, z, si, dx, dt = param_list[0]
-    zStart = z * a
-    trSteps = int(tr/dt)
-    deadline = pd.concat(dataframes).rt.max() / dt
 
-    f, axes = build_ddm_axis(a, trSteps, zStart, tb=deadline)
-    ax, axx1, axx2 = axes
+def sdt_interact(Hits=100, Misses=100, CR=100, FA=0):
+    plt.figure(2)
+    ax = plt.gca()
 
-    ax.hlines(y=a, xmin=trSteps-100, xmax=deadline, color='k', linewidth=4)
-    ax.hlines(y=0, xmin=trSteps-100, xmax=deadline, color='k', linewidth=4)
+    d, c = sdt.sdt_mle(Hits, Misses, CR, FA)
+    dstr = "$d'={:.2f}$".format(d)
+    cstr = "$c={:.2f}$".format(c)
 
-    for i, df in enumerate(dataframes):
+    x = np.linspace(-4,8,1000)
+    noiseDist = norm.pdf(x)
+    signalDist = norm.pdf(loc=d, x=x)
+    plt.plot(x, noiseDist, color='k', alpha=.4)
+    plt.plot(x, signalDist, color='k')
 
-        c = colors[i]
-        a, tr, v, z, si, dx, dt = param_list[i]
-        zStart = z * a
-        trSteps = int(tr/dt)
+    yupper = ax.get_ylim()[-1]
+    ax.vlines(c, 0, yupper, linestyles='-', linewidth=1.5)
+    ax.set_ylim(0, yupper)
+    ax.set_xlim(-3.5, 8)
+    ax.set_yticklabels([])
+    sns.despine(left=True, right=True, top=True)
 
-        rt1 = df[df.choice==1].rt.values / dt - 50
-        rt0 = df[df.choice==0].rt.values / dt - 50
+    ax.text(4, yupper*.9, dstr, fontsize=14)
+    ax.text(4, yupper*.8, cstr, fontsize=14)
 
-        sns.kdeplot(rt1, alpha=.35, linewidth=0, color=c, ax=axx1, shade=True,
-                clip=(rt1.min(), rt1.max()), bw=35)
-        sns.kdeplot(rt0, alpha=.35, linewidth=0, color=c, ax=axx2, shade=True,
-                clip=(rt0.min(), rt0.max()), bw=35)
-
-        accum_x = np.arange(rt1.mean())*.001
-        driftRate = zStart + (accum_x * v)
-        x = np.linspace(trSteps, rt1.mean(), accum_x.size)
-        ax.plot(x, driftRate, color=c, linewidth=3.5)
-
-    axx1.set_ylim(0.0, .004)
-    axx2.set_ylim(.004, 0.0)
-    return ax
+    plt.show()

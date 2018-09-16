@@ -23,13 +23,13 @@ def sdt_mle(h, m, cr, fa):
     H, M, CR, FA, = h, m, cr, fa
 
     n0, n1 = float(FA + CR), float(H + M)
-    if FA == 0: FA += 0.5
-    if FA == n0: FA -= 0.5
     if H == 0:  H += 0.5
     if H == n1: H -= 0.5
+    if FA == 0: FA += 0.5
+    if FA == n0: FA -= 0.5
 
-    pFA = FA / float(n0)
     pH = H / float(n1)
+    pFA = FA / float(n0)
     d = norm.ppf(pH) - norm.ppf(pFA)
     c = -0.5 * (norm.ppf(pH) + norm.ppf(pFA))
 
