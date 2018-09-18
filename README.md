@@ -1,9 +1,12 @@
 # AdaptiveDecisionMaking_2018 (ADM)
 Repository for code and lab resources for "Neural and Cognitive Models of Adaptive Decision Making" course (2018)
 
-# Getting started
 
-### Anaconda & Python
+## Jupyter notebooks
+Click on [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/CoAxLab/AdaptiveDecisionMaking_2018/master) to run jupyter notebooks for labs and homework.
+
+
+## Instructions for getting started
 
 - [**Anaconda distribution**](https://www.anaconda.com/): package management for scientific python (& R)
 
@@ -23,7 +26,7 @@ Repository for code and lab resources for "Neural and Cognitive Models of Adapti
 
 
 
-### Confirm Anaconda and Python installed
+#### Confirm Anaconda and Python installed
 
 ```bash
 # check that your system is now using anaconda's version of python
@@ -37,7 +40,7 @@ $ python -V
 
 
 
-### Install ADMCode package
+#### Install ADMCode package
 
 [**ADMCode**](https://pypi.org/project/ADMCode/) is a python package with custom code that can be used to complete the labs and homeworks (which will both be in the form of jupyter notebooks)
 
@@ -47,7 +50,7 @@ $ pip install --upgrade ADMCode
 
 
 
-### Jupyter Notebook
+#### Run Jupyter Notebook locally
 
 ```sh
 # open up a terminal and execute the command below
