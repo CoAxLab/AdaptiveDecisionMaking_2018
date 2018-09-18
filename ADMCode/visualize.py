@@ -41,9 +41,9 @@ def build_ddm_axis(parameters, maxtime=1.5):
     divider = make_axes_locatable(ax)
     axx1 = divider.append_axes("top", size=1.2, pad=0.0, sharex=ax)
     axx2 = divider.append_axes("bottom", size=1.2, pad=0.0, sharex=ax)
-    plt.setp(axx1, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
-    plt.setp(axx2, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
-
+    plt.setp(axx1, xlim=(xmin - 51, w + 1))#, ylim=(0 - (.01 * a), a + (.01 * a)))
+    plt.setp(axx2, xlim=(xmin - 51, w + 1))#, ylim=(0 - (.01 * a), a + (.01 * a)))
+    axx2.invert_yaxis()
     axx1.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
     axx2.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
 
@@ -56,7 +56,7 @@ def build_ddm_axis(parameters, maxtime=1.5):
 
 
 
-def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=None, vcolor='k'):
+def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=None, vcolor='k', kdeplot=True):
 
     maxtime = df.rt.max()
     a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters, maxtime)
@@ -68,7 +68,7 @@ def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=No
     else:
         f = fig; axes = fig.axes
 
-    plot_bound_rts(df, parameters, f=f, colors=colors)
+    plot_bound_rts(df, parameters, f=f, colors=colors, kdeplot=kdeplot)
 
     if traces is not None:
         plot_traces(df, parameters, traces, f=f, colors=colors)
@@ -84,25 +84,30 @@ def compare_drift_effects(df, param_list):
     # colors=["#3498db", "#f19b2c", '#009e07', '#3572C6', '#e5344a', "#9B59B6"]
     sDF = df[df.stim=='signal']
     nDF = df[df.stim=='noise']
-    colors = [['#009e07','#e5344a'], ["#e5344a", "#009e07"]]
+    colors = [['#009e07','#009e07'], ["#e5344a", "#e5344a"]]
 
     maxtime = df.rt.max()
     a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(param_list[0], maxtime)
     f=None
     for i, dfi in enumerate([sDF, nDF]):
         clrs = colors[i]
-        f = plot_ddm_sims(dfi, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0])
+        f = plot_ddm_sims(dfi, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0], kdeplot=False)
 
     ax, axx1, axx2 = f.axes
     xmin = trSteps-100
     ax.hlines(y=a, xmin=xmin, xmax=deadline, color='k', linewidth=4)
     ax.hlines(y=0, xmin=xmin, xmax=deadline, color='k', linewidth=4)
-    axx1.set_ylim(0, .0085)
-    axx2.set_ylim(.0085, 0.0)
+    #axx1.set_ylim(0, .0085)
+    if sDF.shape[0] > nDF.shape[0]:
+        ymax, ymin = axx1.get_ylim()[::-1]
+        axx2.set_ylim(ymax, ymin)
+    else:
+        ymax, ymin = axx2.get_ylim()[::-1]
+        axx1.set_ylim(ymax, ymin)
     return ax
 
 
-def plot_bound_rts(df, parameters, f, colors=None):
+def plot_bound_rts(df, parameters, f, colors=None, kdeplot=True):
 
     a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(parameters)
     rt1 = df[df.choice==1].rt.values / dt
@@ -112,16 +117,20 @@ def plot_bound_rts(df, parameters, f, colors=None):
         colors = ['#3572C6', '#e5344a']
     ax, axx1, axx2 = f.axes
     clip = (df.rt.min()/dt, deadline)
-    sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True,
-                clip=clip, bw=15)
-    sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True,
-                clip=clip, bw=15)
 
-    ymax = (.005, .01)
-    if rt1.size < rt0.size:
-        ymax = (.01, .005)
-    axx1.set_ylim(0, ymax[0])
-    axx2.set_ylim(ymax[1], 0.0)
+    if kdeplot:
+        sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True,
+                    clip=clip, bw=15)
+        sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True,
+                    clip=clip, bw=15)
+        ymax = (.005, .01)
+        if rt1.size < rt0.size:
+            ymax = (.01, .005)
+        axx1.set_ylim(0, ymax[0])
+        axx2.set_ylim(ymax[1], 0.0)
+    else:
+        sns.distplot(rt1, color=colors[0], ax=axx1, kde=False, norm_hist=False)
+        sns.distplot(rt0, color=colors[1], ax=axx2, kde=False, norm_hist=False)
 
 
 def plot_traces(df, parameters, traces, f, colors):
