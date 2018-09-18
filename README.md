@@ -2,8 +2,8 @@
 Repository for code and lab resources for "Neural and Cognitive Models of Adaptive Decision Making" course (2018)
 
 
-## Jupyter notebooks
-Click on [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/CoAxLab/AdaptiveDecisionMaking_2018/master) to run jupyter notebooks for labs and homework.
+## Jupyter notebooks [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/CoAxLab/AdaptiveDecisionMaking_2018/master)
+Click on binder badge above to run jupyter notebooks for labs and homework
 
 
 ## Instructions for getting started
