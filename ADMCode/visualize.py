@@ -7,6 +7,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from ADMCode import sdt
 import matplotlib.pyplot as plt
 
+
 def convert_params(parameters, maxtime=1.5):
     a, tr, v, z, si, dx, dt = parameters
     zStart = z * a

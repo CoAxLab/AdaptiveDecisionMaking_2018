@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
@@ -34,6 +35,7 @@ def sdt_mle(h, m, cr, fa):
     c = -0.5 * (norm.ppf(pH) + norm.ppf(pFA))
 
     return d, c
+
 
 
 def analyze_yesno(sdtData):
