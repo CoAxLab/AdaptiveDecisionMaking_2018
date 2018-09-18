@@ -41,8 +41,8 @@ def build_ddm_axis(parameters, maxtime=1.5):
     divider = make_axes_locatable(ax)
     axx1 = divider.append_axes("top", size=1.2, pad=0.0, sharex=ax)
     axx2 = divider.append_axes("bottom", size=1.2, pad=0.0, sharex=ax)
-    plt.setp(axx1, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
-    plt.setp(axx2, xlim=(xmin - 51, w + 1), ylim=(0 - (.01 * a), a + (.01 * a)))
+    plt.setp(axx1, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
+    plt.setp(axx2, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
     axx2.invert_yaxis()
     axx1.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
     axx2.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
@@ -80,7 +80,7 @@ def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=No
 
 
 def compare_drift_effects(df, param_list):
-    
+
     sDF = df[df.stim=='signal']
     nDF = df[df.stim=='noise']
     colors = [['#009e07','#009e07'], ["#e5344a", "#e5344a"]]
@@ -96,7 +96,7 @@ def compare_drift_effects(df, param_list):
     xmin = trSteps-100
     ax.hlines(y=a, xmin=xmin, xmax=deadline, color='k', linewidth=4)
     ax.hlines(y=0, xmin=xmin, xmax=deadline, color='k', linewidth=4)
-    #axx1.set_ylim(0, .0085)
+
     if sDF.shape[0] > nDF.shape[0]:
         ymax, ymin = axx1.get_ylim()[::-1]
         axx2.set_ylim(ymax, ymin)
@@ -118,15 +118,16 @@ def plot_bound_rts(df, parameters, f, colors=None, kdeplot=True):
     clip = (df.rt.min()/dt, deadline)
 
     if kdeplot:
-        sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True,
-                    clip=clip, bw=15)
-        sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True,
-                    clip=clip, bw=15)
+        sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True, clip=clip, bw=15)
+        sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True, clip=clip, bw=15)
+
         ymax = (.005, .01)
         if rt1.size < rt0.size:
             ymax = (.01, .005)
         axx1.set_ylim(0, ymax[0])
         axx2.set_ylim(ymax[1], 0.0)
+        # axx2.invert_yaxis()
+        
     else:
         sns.distplot(rt1, color=colors[0], ax=axx1, kde=False, norm_hist=False)
         sns.distplot(rt0, color=colors[1], ax=axx2, kde=False, norm_hist=False)
