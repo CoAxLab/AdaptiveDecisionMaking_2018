@@ -78,21 +78,26 @@ def plot_ddm_sims(df, parameters, traces=None, plot_v=False, fig=None, colors=No
     return f
 
 
-def compare_drift_effects(dataframes, param_list, colors=["#3498db", "#f19b2c", '#009e07', '#3572C6', '#e5344a', "#9B59B6"]):
+def compare_drift_effects(df, param_list):
 
-    maxtime = pd.concat(dataframes).rt.max()
+    # colors=["#3498db", "#f19b2c", '#009e07', '#3572C6', '#e5344a', "#9B59B6"]
+    sDF = df[df.stim=='signal']
+    nDF = df[df.stim=='noise']
+    colors = [['#009e07','#e5344a'], ["#e5344a", "#009e07"]]
+
+    maxtime = df.rt.max()
     a, trSteps, v, zStart, si, dx, dt, deadline = convert_params(param_list[0], maxtime)
     f=None
-    for i, df in enumerate(dataframes):
-        clrs = [colors[i]]*2
-        f = plot_ddm_sims(df, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0])
+    for i, dfi in enumerate([sDF, nDF]):
+        clrs = colors[i]
+        f = plot_ddm_sims(dfi, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0])
 
     ax, axx1, axx2 = f.axes
     xmin = trSteps-100
     ax.hlines(y=a, xmin=xmin, xmax=deadline, color='k', linewidth=4)
     ax.hlines(y=0, xmin=xmin, xmax=deadline, color='k', linewidth=4)
-    axx1.set_ylim(0, .008)
-    axx2.set_ylim(.008, 0.0)
+    axx1.set_ylim(0, .0085)
+    axx2.set_ylim(.0085, 0.0)
     return ax
 
 
@@ -111,9 +116,9 @@ def plot_bound_rts(df, parameters, f, colors=None):
     sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True,
                 clip=clip, bw=15)
 
-    ymax = (.0035, .01)
+    ymax = (.005, .01)
     if rt1.size < rt0.size:
-        ymax = (.01, .0035)
+        ymax = (.01, .005)
     axx1.set_ylim(0, ymax[0])
     axx2.set_ylim(ymax[1], 0.0)
 
@@ -149,6 +154,12 @@ def plot_drift_line(df, parameters, color='k', ax=None):
 def sdt_interact(Hits=100, Misses=100, CR=100, FA=0):
     plt.figure(2)
     ax = plt.gca()
+
+    n0, n1 = float(FA + CR), float(Hits + Misses)
+    if Hits == 0:  Hits += 0.5
+    if Hits == n1: Hits -= 0.5
+    if FA == 0: FA += 0.5
+    if FA == n0: FA -= 0.5
 
     d, c = sdt.sdt_mle(Hits, Misses, CR, FA)
     dstr = "$d'={:.2f}$".format(d)

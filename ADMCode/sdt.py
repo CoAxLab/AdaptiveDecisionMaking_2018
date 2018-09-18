@@ -20,7 +20,7 @@ def sdt_mle(h, m, cr, fa):
 
     """
 
-    H, M, CR, FA, = h, m, cr, fa
+    H, M, CR, FA = h, m, cr, fa
 
     n0, n1 = float(FA + CR), float(H + M)
     if H == 0:  H += 0.5
@@ -34,3 +34,26 @@ def sdt_mle(h, m, cr, fa):
     c = -0.5 * (norm.ppf(pH) + norm.ppf(pFA))
 
     return d, c
+
+
+def analyze_yesno(sdtData):
+
+    hits, misses, cr, fa = sdtData[['H','M','CR','FA']].sum().values
+
+    numSignal = hits + misses
+    numNoise = cr + fa
+    signalAcc = hits/numSignal
+    noiseAcc = cr/numNoise
+
+    d, c = sdt_mle(hits, misses, cr, fa)
+
+    print("Signal Accuracy = {:.0f}%".format(signalAcc*100))
+    print("\tHits = {}".format(hits))
+    print("\tMisses = {}\n".format(misses))
+
+    print("Noise Accuracy = {:.0f}%".format(noiseAcc*100))
+    print("\tCorr. Rej. = {}".format(cr))
+    print("\tFalse Alarms = {}\n".format(fa))
+
+    print("d-prime (d') = {:.2f}".format(d))
+    print("criterion (c) = {:.2f}".format(c))
