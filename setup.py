@@ -5,7 +5,7 @@ import os
 package_data = {'ADMCode':['notebooks/*.ipynb', 'data/*.csv']}
 
 major = 0
-minor = 1
+minor = 2
 patch = 0
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 

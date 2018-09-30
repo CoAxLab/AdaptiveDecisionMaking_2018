@@ -16,7 +16,7 @@ modules = glob(os.path.dirname(__file__) + "/*.py")
 __all__ = [os.path.basename(f)[:-3] for f in modules]
 
 major = 0
-minor = 1
+minor = 2
 patch = 0
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 

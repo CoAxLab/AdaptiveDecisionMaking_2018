@@ -170,6 +170,7 @@ def clean_output(data, traces, deadline=1.2, stimulus=None):
     return df, traces
 
 
+
 def ddm_sim_yesno(param_list, ntrials, deadline):
 
     psignal, pnoise = param_list

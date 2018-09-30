@@ -35,7 +35,7 @@ pip install --upgrade ADMCode
 ## Working with `git`
 Git is full of weird nonsense terminology. [**This tutorial**](http://rogerdudler.github.io/git-guide/) is a super useful resource for understanding how to use it.
 
-- If you don't already have a github account, create one [**here**](github.com)
+- If you don't already have a github account, create one [**here**](https://github.com)
 - Install git command-line tools (see *setup* section [**here**](http://rogerdudler.github.io/git-guide/))
 
 #### Clone ADMCode
