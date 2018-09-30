@@ -111,22 +111,7 @@ class Qagent(object):
     def simulate_multiple_agents(self, nagents=10, ntrials=1000):
         dflist = []
         for i in range(nagents):
-            # agent_i = Qagent(alpha=self.alpha, beta=self.beta, epsilon=self.epsilon, preward=self.preward, rvalues=self.rvalues)
             data_i = self.play_bandits(ntrials=ntrials, get_output=True)
             data_i.insert(0, 'agent', i+1)
             dflist.append(data_i)
-
         return pd.concat(dflist)
-
-
-def simulate_multiple_agents(nagents=10, ntrials=1000, alpha=.1, beta=.15,
-    epsilon=.1, preward=[.8, .5, .2, .9], rvalues=[2, 1, 1, .5]):
-
-    dflist = []
-    for i in range(nagents):
-        agent_i = Qagent(alpha=alpha, beta=beta, epsilon=epsilon, preward=preward, rvalues=rvalues)
-        data_i = agent_i.play_bandits(ntrials=ntrials, get_output=True)
-        data_i.insert(0, 'agent', i+1)
-        dflist.append(data_i)
-
-    return pd.concat(dflist)
