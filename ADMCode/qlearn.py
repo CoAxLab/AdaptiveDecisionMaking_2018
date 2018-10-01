@@ -13,9 +13,15 @@ import matplotlib.pyplot as plt
 
 
 def update_Qi(Qval, reward, alpha):
+    """ update q-value of selected action, given reward and alpha
+    """
     return Qval + alpha * (reward - Qval)
 
+
 def update_Pall(Qvector, beta):
+    """ update vector of action selection probabilities given
+    associated q-values
+    """
     return np.array([np.exp(beta*Q_i) / np.sum(np.exp(beta * Qvector)) for Q_i in Qvector])
 
 
@@ -56,13 +62,35 @@ class Qagent(object):
         self.updateP = lambda Qvector, act_i, beta: np.exp(beta*Qvector[act_i])/np.sum(np.exp(beta*Qvector))
         self.nact = len(preward)
         self.actions = np.arange(self.nact)
-        self.alpha = alpha
-        self.beta = beta
-        self.epsilon = epsilon
+        self.set_agent_params(alpha=alpha, beta=beta, epsilon=epsilon)
 
 
-    def play_bandits(self, ntrials=1000, get_output=False):
+    def set_agent_params(self, alpha=None, beta=None, epsilon=None):
+        """ update learning rate, inv. temperature, and/or
+        epsilon parameters of q-learning agent
+        """
 
+        if alpha is not None:
+            self.alpha = alpha
+
+        if beta is not None:
+            self.beta = beta
+
+        if epsilon is not None:
+            self.epsilon = epsilon
+
+
+    def play_bandits(self, ntrials=1000, get_output=True):
+        """ simulates agent performance on a multi-armed bandit task
+
+        ::Arguments::
+            ntrials (int): number of trials to play bandits
+            get_output (bool): returns output DF if True (default)
+
+        ::Returns::
+            DataFrame (Ntrials x Nbandits) with trialwise Q and P
+            values for each bandit
+        """
         pdata = np.zeros((ntrials+1, self.nact))
         pdata[0, :] = np.array([1/self.nact]*self.nact)
         qdata = np.zeros_like(pdata)
@@ -81,7 +109,7 @@ class Qagent(object):
             # update value of selected action
             qdata[t+1, act_i] = update_Qi(qdata[t, act_i], r, self.alpha)
 
-            # broadcast old values for unchosen actions
+            # broadcast old q-values for unchosen actions
             for act_j in self.actions[np.where(self.actions!=act_i)]:
                 qdata[t+1, act_j] = qdata[t, act_j]
 
@@ -99,6 +127,9 @@ class Qagent(object):
 
 
     def make_output_df(self):
+        """ generate output dataframe with trialwise Q and P measures for each bandit,
+        as well as choice selection, and feedback
+        """
         df = pd.concat([pd.DataFrame(dat) for dat in [self.qdata, self.pdata]], axis=1)
         columns = np.hstack(([['{}{}'.format(x, c) for c in self.actions] for x in ['q', 'p']]))
         df.columns = columns
@@ -109,6 +140,8 @@ class Qagent(object):
 
 
     def simulate_multiple_agents(self, nagents=10, ntrials=1000):
+        """ simulates multiple identical agents on multi-armed bandit task
+        """
         dflist = []
         for i in range(nagents):
             data_i = self.play_bandits(ntrials=ntrials, get_output=True)

@@ -244,5 +244,6 @@ def plot_qlearning(data):
     ax2.set_title('Probability')
 
     for ax in f.axes:
+        # ax.set_ylim(0,1)
         ax.set_xlabel('Trials')
     sns.despine()
