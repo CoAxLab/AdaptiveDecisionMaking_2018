@@ -17,8 +17,14 @@ __all__ = [os.path.basename(f)[:-3] for f in modules]
 
 major = 0
 minor = 2
-patch = 3
+patch = 4
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
-# path to local site-packages/jupyterthemes
-package_dir = os.path.dirname(os.path.realpath(__file__))
+_package_dir = os.path.dirname(os.path.realpath(__file__))
+
+def style_notebook():
+    from IPython.core.display import HTML
+    _styles_dir = os.path.join(_package_dir, '../styles')
+    style = os.path.join(_styles_dir, 'custom.css')
+    csscontent = open(style, "r").read()
+    return HTML(csscontent)
