@@ -37,6 +37,10 @@ class MultiArmedBandit(object):
     def __init__(self, preward=[.9, .8, .7], rvalues=[1, 1, 1]):
         self.preward = preward
         self.rvalues = rvalues
+        try:
+            assert(len(self.rvalues)==len(self.preward))
+        except AssertionError:
+            self.rvalues = np.ones(len(self.preward))
 
     def set_params(self, **kwargs):
         error_msg = """preward and rvalues must be same size
@@ -76,10 +80,12 @@ class Qagent(object):
         beta (float): inverse temperature parameter
         preward (list): 1xN vector of reward probaiblities for each of N bandits
         rvalues (list): 1xN vector of payout values for each of N bandits
+                        IF rvalues is None, all values set to 1
 
     """
-    def __init__(self, alpha=.1, beta=.15, epsilon=.1, preward=[.9, .8, .7], rvalues=[1, 1, 1]):
-
+    def __init__(self, alpha=.04, beta=3.5, epsilon=.1, preward=[.9, .8, .7], rvalues=None):
+        if rvalues is None:
+            rvalues = np.ones(len(preward))
         self.bandits = MultiArmedBandit(preward=preward, rvalues=rvalues)
         self.updateQ = lambda Qval, r, alpha: Qval + alpha*(r - Qval)
         self.updateP = lambda Qvector, act_i, beta: np.exp(beta*Qvector[act_i])/np.sum(np.exp(beta*Qvector))
@@ -170,15 +176,16 @@ class Qagent(object):
         r = np.array(self.bandits.rvalues)
         p = np.array(self.bandits.preward)
         df['optimal'] = np.where(df['choice']==np.argmax(p * r), 1, 0)
+        df.insert(0, 'agent', 1)
         self.data = df.copy()
 
 
-    def simulate_multiple_agents(self, nagents=10, ntrials=1000):
+    def simulate_multiple(self, nsims=10, ntrials=1000):
         """ simulates multiple identical agents on multi-armed bandit task
         """
         dflist = []
-        for i in range(nagents):
+        for i in range(nsims):
             data_i = self.play_bandits(ntrials=ntrials, get_output=True)
-            data_i.insert(0, 'agent', i+1)
+            data_i['agent'] += i
             dflist.append(data_i)
         return pd.concat(dflist)

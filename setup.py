@@ -6,7 +6,7 @@ package_data = {'ADMCode':['notebooks/*.ipynb', 'notebooks/images/*.png', 'data/
 
 major = 0
 minor = 3
-patch = 0
+patch = 1
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(

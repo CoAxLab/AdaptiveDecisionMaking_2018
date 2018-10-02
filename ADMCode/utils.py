@@ -3,15 +3,33 @@ from __future__ import division
 import pandas as pd
 import numpy as np
 from future.utils import listvalues
+from scipy.stats.stats import sem
 
+def get_optimal_auc(df, nblocks=25, verbose=False, as_percent=True):
+    xdf = blockify_trials(df, nblocks=nblocks)
+    muOptDF = xdf.groupby(['agent', 'block']).mean().reset_index()
+    auc = pd.pivot_table(muOptDF, values='optimal', index='block').values.sum()
+    if as_percent:
+        auc = (auc / nblocks) * 100
+    if verbose:
+        print("Optimal Choice: {:.2f}".format(auc))
 
-def analyze_choice_behavior(df, nblocks=10):
-    subject_choices = lambda idf: idf.choice.value_counts()/idf.shape[0]
-    bdf = blockify_trials(df, groups=['agent'], nblocks=nblocks)
-    xdf = bdf.groupby('agent').apply(subject_choices).reset_index()
-    muChoice = xdf.sort_values(['agent', 'level_1']).groupby('level_1').mean().choice.values
-    errChoice = xdf.sort_values(['agent', 'level_1']).groupby('level_1').sem().choice.values * 1.96
-    return muChoice, errChoice
+    return auc
+
+def analyze_bandits(df, nblocks=25, get_err=False):
+    xdf = blockify_trials(df, nblocks=nblocks)
+    optDF = xdf.groupby(['agent', 'block']).mean().reset_index()
+    muOpt = pd.pivot_table(optDF, values='optimal', index='block').values
+    #muOpt = pd.pivot_table(optDF, values='optimal', index='block').rolling(window=15)
+    #rolling_mean = muOpt.mean()
+    muOpt = np.hstack(muOpt)
+    if get_err:
+        errOpt = pd.pivot_table(optDF, values='optimal', index='block', aggfunc=sem).values*1.96
+        errOpt = np.hstack(errOpt)
+    else:
+        errOpt = np.zeros_like(muOpt)
+    return muOpt, errOpt
+
 
 def blockify_trials(data, nblocks=5, conds=None, groups=['agent']):
 

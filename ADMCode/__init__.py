@@ -17,7 +17,7 @@ __all__ = [os.path.basename(f)[:-3] for f in modules]
 
 major = 0
 minor = 3
-patch = 0
+patch = 1
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 _package_dir = os.path.dirname(os.path.realpath(__file__))

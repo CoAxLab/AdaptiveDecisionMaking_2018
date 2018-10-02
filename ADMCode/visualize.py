@@ -204,7 +204,10 @@ def sdt_interact(pH=.80, pFA=.10):
 
 
 
-def plot_qlearning(data):
+def plot_qlearning(data, nblocks=25, analyze=True):
+
+    if analyze:
+        auc = utils.get_optimal_auc(data, nblocks, verbose=True)
 
     sns.set(style='white', font_scale=1.3)
     clrs = ['#3778bf', '#feb308', '#9b59b6', '#2ecc71', '#e74c3c',
@@ -218,20 +221,18 @@ def plot_qlearning(data):
 
     mudf = df.groupby('trial').mean().reset_index()
     errdf = df.groupby('trial').sem().reset_index()*1.96
+    x = mudf.trial.values
 
     plot_err = True
     if np.isnan(errdf.loc[1, 'q0']):
         plot_err = False
-        df['agent'] = 1
 
-    xdf = utils.blockify_trials(df, nblocks=20)
-    x = mudf.trial.values
-    xOpt = np.arange(1, xdf.block.unique().size+1)
-    # muOpt = xdf.groupby('block').mean().optimal.values
-    muOptDF = xdf.groupby(['agent', 'block']).mean().reset_index()
-    muOpt = pd.pivot_table(muOptDF, values='optimal', index='block').values
-    ax3.plot(xOpt, muOpt, color='k')
-    ax3.hlines(1/nactions, 0, xOpt[-1], color='k', linestyles='--', label='chance')
+    x3 = np.arange(1, nblocks+1)
+    chance = 1/nactions
+    mu3, err3 = utils.analyze_bandits(df, nblocks=nblocks, get_err=plot_err)
+    ax3.plot(x3, mu3, color='k')
+    ax3.hlines(chance, 1, x3[-1], color='k', linestyles='--', label='chance')
+
     for i, act in enumerate(actions):
         muQ = mudf['q{}'.format(act)].values
         muP = mudf['p{}'.format(act)].values
@@ -244,13 +245,15 @@ def plot_qlearning(data):
             ax1.fill_between(x, muQ-errQ, muQ+errQ, color=clrs[i], alpha=.2)
             ax2.fill_between(x, muP-errP, muP+errP, color=clrs[i], alpha=.2)
             if i==0:
-                #errOptDF = xdf.groupby(['agent', 'block']).me().reset_index()
-                errOpt = pd.pivot_table(muOptDF, values='optimal', index='block', aggfunc=sem).values*1.96
-                muOpt = np.hstack(muOpt)
-                errOpt = np.hstack(errOpt)
-                # errOpt = xdf.groupby('block').sem().optimal.values*1.96
-                ax3.fill_between(xOpt, muOpt-errOpt, muOpt+errOpt, color='k', alpha=.15)
-
+                ax3.fill_between(x3, mu3-err3, mu3+err3, color='k', alpha=.15)
+        else:
+            ychance = np.ones(mu3.size) * chance
+            mu3A = np.copy(mu3)
+            mu3B = np.copy(mu3)
+            mu3A[np.where(mu3<=chance)] = chance
+            mu3B[np.where(mu3>=chance)] = chance
+            ax3.fill_between(x3, ychance, mu3A, color='#2ecc71', alpha=.15)
+            ax3.fill_between(x3, ychance, mu3B, color='#e74c3c', alpha=.15)
 
     ax1.legend(loc=4)
     ax1.set_ylabel('$Q(arm)$')
@@ -262,12 +265,11 @@ def plot_qlearning(data):
 
     ax3.set_ylim(0,1)
     ax3.set_ylabel('% Optimal Arm')
-    # ax3.set_xlabel('Time')
-    ax3.set_xticks([0, xdf.block.max()])
-    ax3.set_xticklabels([0, df.trial.max()])
+    ax3.set_xticks([1, nblocks+1])
+    ax3.set_xticklabels([1, df.trial.max()])
     ax3.legend(loc=4)
+
     for ax in f.axes:
-        # ax.set_ylim(0,1)
         ax.set_xlabel('Trials')
     plt.tight_layout()
     sns.despine()
