@@ -4,9 +4,9 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import norm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from ADMCode import sdt
+from ADMCode import sdt, utils
 import matplotlib.pyplot as plt
-
+from scipy.stats.stats import sem
 
 def convert_params(parameters, maxtime=1.5):
     a, tr, v, z, si, dx, dt = parameters
@@ -211,18 +211,27 @@ def plot_qlearning(data):
             '#3498db', '#fd7f23', '#694098', '#319455', '#f266db',
             '#13579d', '#fa8d67'  '#a38ff1'  '#3caca4', '#c24f54']
 
-    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(9,3.5))
+    f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12,3.5))
     df = data.copy()
-    nactions = int(df.columns[-3].split('p')[-1])+1
+    nactions = int(df.columns[-4].split('p')[-1])+1
     actions = np.arange(nactions)
 
     mudf = df.groupby('trial').mean().reset_index()
     errdf = df.groupby('trial').sem().reset_index()*1.96
+
     plot_err = True
     if np.isnan(errdf.loc[1, 'q0']):
         plot_err = False
+        df['agent'] = 1
 
+    xdf = utils.blockify_trials(df, nblocks=20)
     x = mudf.trial.values
+    xOpt = np.arange(1, xdf.block.unique().size+1)
+    # muOpt = xdf.groupby('block').mean().optimal.values
+    muOptDF = xdf.groupby(['agent', 'block']).mean().reset_index()
+    muOpt = pd.pivot_table(muOptDF, values='optimal', index='block').values
+    ax3.plot(xOpt, muOpt, color='k')
+    ax3.hlines(1/nactions, 0, xOpt[-1], color='k', linestyles='--', label='chance')
     for i, act in enumerate(actions):
         muQ = mudf['q{}'.format(act)].values
         muP = mudf['p{}'.format(act)].values
@@ -234,6 +243,14 @@ def plot_qlearning(data):
             errP = errdf['p{}'.format(act)].values
             ax1.fill_between(x, muQ-errQ, muQ+errQ, color=clrs[i], alpha=.2)
             ax2.fill_between(x, muP-errP, muP+errP, color=clrs[i], alpha=.2)
+            if i==0:
+                #errOptDF = xdf.groupby(['agent', 'block']).me().reset_index()
+                errOpt = pd.pivot_table(muOptDF, values='optimal', index='block', aggfunc=sem).values*1.96
+                muOpt = np.hstack(muOpt)
+                errOpt = np.hstack(errOpt)
+                # errOpt = xdf.groupby('block').sem().optimal.values*1.96
+                ax3.fill_between(xOpt, muOpt-errOpt, muOpt+errOpt, color='k', alpha=.15)
+
 
     ax1.legend(loc=4)
     ax1.set_ylabel('$Q(arm)$')
@@ -241,9 +258,16 @@ def plot_qlearning(data):
 
     ax2.set_ylabel('$P(arm)$')
     ax2.set_ylim(0,1)
-    ax2.set_title('Probability')
+    ax2.set_title('Softmax Prob.')
 
+    ax3.set_ylim(0,1)
+    ax3.set_ylabel('% Optimal Arm')
+    # ax3.set_xlabel('Time')
+    ax3.set_xticks([0, xdf.block.max()])
+    ax3.set_xticklabels([0, df.trial.max()])
+    ax3.legend(loc=4)
     for ax in f.axes:
         # ax.set_ylim(0,1)
         ax.set_xlabel('Trials')
+    plt.tight_layout()
     sns.despine()

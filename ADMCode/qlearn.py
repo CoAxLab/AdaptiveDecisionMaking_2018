@@ -25,6 +25,8 @@ def update_Pall(Qvector, beta):
     return np.array([np.exp(beta*Q_i) / np.sum(np.exp(beta * Qvector)) for Q_i in Qvector])
 
 
+
+
 class MultiArmedBandit(object):
     """ defines a multi-armed bandit task
 
@@ -32,15 +34,37 @@ class MultiArmedBandit(object):
         preward (list): 1xN vector of reward probaiblities for each of N bandits
         rvalues (list): 1xN vector of payout values for each of N bandits
     """
-    def __init__(self, preward=[.8, .5, .2, .9], rvalues=[2, 1, 1, .5]):
+    def __init__(self, preward=[.9, .8, .7], rvalues=[1, 1, 1]):
         self.preward = preward
         self.rvalues = rvalues
+
+    def set_params(self, **kwargs):
+        error_msg = """preward and rvalues must be same size
+                    setting all rvalues to 1"""
+        kw_keys = list(kwargs)
+        if 'preward' in kw_keys:
+            self.preward = kwargs['preward']
+            if 'rvalues' not in kw_keys:
+                try:
+                    assert(len(self.rvalues)==len(self.preward))
+                except AssertionError:
+                    self.rvalues = np.ones(len(self.preward))
+
+        if 'rvalues' in kw_keys:
+            self.rvalues = kwargs['rvalues']
+            try:
+                assert(len(self.rvalues)==len(self.preward))
+            except AssertionError:
+                raise(AssertionError, error_msg)
+
 
     def get_feedback(self, action_ix):
         pOutcomes = np.array([self.preward[action_ix], 1-self.preward[action_ix]])
         Outcomes = np.array([self.rvalues[action_ix], 0])
         feedback = np.random.choice(Outcomes, p=pOutcomes)
         return feedback
+
+
 
 
 class Qagent(object):
@@ -54,30 +78,38 @@ class Qagent(object):
         rvalues (list): 1xN vector of payout values for each of N bandits
 
     """
-    def __init__(self, alpha=.1, beta=.15, epsilon=.1, preward=[.8, .5, .2, .9],
-                 rvalues=[2, 1, 1, .5]):
+    def __init__(self, alpha=.1, beta=.15, epsilon=.1, preward=[.9, .8, .7], rvalues=[1, 1, 1]):
 
         self.bandits = MultiArmedBandit(preward=preward, rvalues=rvalues)
         self.updateQ = lambda Qval, r, alpha: Qval + alpha*(r - Qval)
         self.updateP = lambda Qvector, act_i, beta: np.exp(beta*Qvector[act_i])/np.sum(np.exp(beta*Qvector))
-        self.nact = len(preward)
-        self.actions = np.arange(self.nact)
-        self.set_agent_params(alpha=alpha, beta=beta, epsilon=epsilon)
+        self.set_params(alpha=alpha, beta=beta, epsilon=epsilon)
 
 
-    def set_agent_params(self, alpha=None, beta=None, epsilon=None):
+    def set_params(self, **kwargs):
         """ update learning rate, inv. temperature, and/or
         epsilon parameters of q-learning agent
         """
 
-        if alpha is not None:
-            self.alpha = alpha
+        kw_keys = list(kwargs)
 
-        if beta is not None:
-            self.beta = beta
+        if 'alpha' in kw_keys:
+            self.alpha = kwargs['alpha']
 
-        if epsilon is not None:
-            self.epsilon = epsilon
+        if 'beta' in kw_keys:
+            self.beta = kwargs['beta']
+
+        if 'epsilon' in kw_keys:
+            self.epsilon = kwargs['epsilon']
+
+        if 'preward' in kw_keys:
+            self.bandits.set_params(preward=kwargs['preward'])
+
+        if 'rvalues' in kw_keys:
+            self.bandits.set_params(rvalues=kwargs['rvalues'])
+
+        self.nact = len(self.bandits.preward)
+        self.actions = np.arange(self.nact)
 
 
     def play_bandits(self, ntrials=1000, get_output=True):
@@ -94,14 +126,13 @@ class Qagent(object):
         pdata = np.zeros((ntrials+1, self.nact))
         pdata[0, :] = np.array([1/self.nact]*self.nact)
         qdata = np.zeros_like(pdata)
-        actions = np.arange(self.nact)
         self.choices = []
         self.feedback = []
 
         for t in range(ntrials):
 
             # select bandit arm (action)
-            act_i = np.random.choice(actions, p=pdata[t, :])
+            act_i = np.random.choice(self.actions, p=pdata[t, :])
 
             # observe feedback
             r = self.bandits.get_feedback(act_i)
@@ -136,6 +167,9 @@ class Qagent(object):
         df.insert(0, 'trial', np.arange(1, df.shape[0]+1))
         df['choice'] = self.choices
         df['feedback'] = self.feedback
+        r = np.array(self.bandits.rvalues)
+        p = np.array(self.bandits.preward)
+        df['optimal'] = np.where(df['choice']==np.argmax(p * r), 1, 0)
         self.data = df.copy()
 
 
