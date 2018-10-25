@@ -203,7 +203,6 @@ def sdt_interact(pH=.80, pFA=.10):
     plt.show()
 
 
-
 def plot_qlearning(data, nblocks=25, analyze=True):
 
     if analyze:

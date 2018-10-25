@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 import numpy as np
 import os
 
-package_data = {'ADMCode':['notebooks/*.ipynb', 'notebooks/images/*.png', 'data/*.csv']}
+package_data = {'ADMCode':['notebooks/*.ipynb', 'notebooks/images/*.png', 'notebooks/images/*.mp4', 'data/*.csv']}
 
 major = 0
-minor = 3
-patch = 1
+minor = 4
+patch = 0
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(
