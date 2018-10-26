@@ -14,7 +14,7 @@ import seaborn as sns
 sns.set(style='white', font_scale=1.8)
 clrs = ['#3778bf', '#e74c3c', '#9b59b6', '#319455', '#feb308', '#fd7f23']
 
-def LCA_Model(I1=10, I2=8, I0=2, k=5, B=5, si=1., Z=1, onmax=800, dt=.01, tau=.1, tmax=1.5):
+def LCA_Model(I1=10, I2=8, I0=2, k=5, B=5, si=1., Z=1, dt=.01, tau=.1, tmax=1.5):
 
     timepoints = np.arange(0, tmax, dt)
     ntime = timepoints.size
@@ -38,7 +38,7 @@ def LCA_Model(I1=10, I2=8, I0=2, k=5, B=5, si=1., Z=1, onmax=800, dt=.01, tau=.1
     return y1[:i], y2[:i], np.nan, np.nan
 
 
-def attractor_network(I1=6, I2=3, I0=2, k=.85, B=.28, si=.3, rmax=50, b=30, g=9, Z=20, onmax=800, dt=.001, tau=.05, tmax=1.5):
+def attractor_network(I1=6, I2=3, I0=2, k=.85, B=.28, si=.3, rmax=50, b=30, g=9, Z=20, dt=.001, tau=.05, tmax=1.5):
 
     timepoints = np.arange(0, tmax, dt)
     ntime = timepoints.size
