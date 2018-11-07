@@ -26,6 +26,43 @@ def update_Pall(Qvector, beta):
 
 
 
+class IowaGamblingTask(object):
+    """ defines a multi-armed bandit task
+
+    ::Arguments::
+        preward (list): 1xN vector of reward probaiblities for each of N bandits
+        rvalues (list): 1xN vector of payout values for each of N bandits
+    """
+    def __init__(self, feedback, nblocks=1):
+
+        if nblocks>1:
+            feedback = feedback.append([feedback]*(nblocks-1)).reset_index()
+
+        feedback.rename(columns={'index':'t'}, inplace=True)
+        self.feedback = feedback
+
+        self.names = np.sort(self.feedback.columns.values)
+        self.ntrials=self.feedback.shape[0]
+
+        self.choices, self.all_traces = [], []
+        self.rts={k:[] for k in self.names}
+
+        self.qdict={k:[0] for k in self.names}
+        self.choice_prob={k:[1/self.names.size] for k in self.names}
+
+
+    def get_feedback(self, trial, action_ix):
+
+        choice_name = self.names[action_ix]
+        return self.feedback.loc[trial, choice_name]
+
+        #new_col = self.feedback[choice_name].shift(-1)
+        #new_col.set_value(new_col.index[-1], oldval)
+        #self.feedback.loc[:, choice_name] = new_col
+        #return self.feedback.loc[:, choice_name] = new_col
+
+
+
 
 class MultiArmedBandit(object):
     """ defines a multi-armed bandit task
