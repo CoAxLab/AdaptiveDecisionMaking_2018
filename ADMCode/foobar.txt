@@ -1,0 +1,11 @@
+Now let's evaluate the performance of the model using two metrics:
+
+<br>
+
+**Payoff (P)** is the degree to which the agent chooses the High Value decks over the Low Value decks. This is a measure of efficient value-based decision-making.
+
+P = $\Sigma (C + D) - \Sigma (A + B)$
+
+**Sensitivity (Q)** is the sensitivity of the agent to High Frequency rewards over Low Frequency rewards.
+
+Q = $\Sigma (B + D) - \Sigma (A + C)$
