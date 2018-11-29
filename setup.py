@@ -5,8 +5,8 @@ import os
 package_data = {'ADMCode':['notebooks/*.ipynb', 'notebooks/images/*.png', 'notebooks/images/*.mp4', 'data/*.csv']}
 
 major = 0
-minor = 4
-patch = 4
+minor = 5
+patch = 0
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(
