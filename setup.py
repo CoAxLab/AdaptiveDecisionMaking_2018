@@ -6,7 +6,7 @@ package_data = {'ADMCode':['notebooks/*.ipynb', 'notebooks/images/*.png', 'noteb
 
 major = 0
 minor = 5
-patch = 1
+patch = 2
 __version__ = '.'.join([str(v) for v in [major, minor, patch]])
 
 setup(
@@ -15,7 +15,7 @@ setup(
     author='Kyle Dunovan, Timothy Verstynen',
     author_email='dunovank@gmail.com',
     url='http://github.com/CoAxLab/AdaptiveDecisionMaking_2018',
-    packages=['ADMCode'],
+    packages=['ADMCode', 'ADMCode.snuz', 'ADMCode.snuz.ars', 'ADMCode.snuz.ppo', 'ADMCode.snuz.ppo.agents'],
     package_data=package_data,
     description='Code and lab resources for Neural and Cognitive Models of Adaptive Decision Making course (2018)',
     install_requires=['numpy', 'scipy', 'pandas', 'matplotlib', 'seaborn', 'scikit-learn', 'numba', 'future'],
