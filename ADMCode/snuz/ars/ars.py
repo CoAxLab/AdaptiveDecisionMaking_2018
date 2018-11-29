@@ -181,10 +181,10 @@ class ARSLearner(object):
         self.num_episodes_used = float('inf')
 
         # create shared table for storing noise
-        print("Creating deltas table.")
+        # print("Creating deltas table.")
         deltas_id = create_shared_noise.remote()
         self.deltas = SharedNoiseTable(ray.get(deltas_id), seed=seed + 3)
-        print('Created deltas table.')
+        # print('Created deltas table.')
 
         # initialize workers with different random seeds
         print('Initializing workers.')
@@ -208,7 +208,7 @@ class ARSLearner(object):
 
         # initialize optimization algorithm
         self.optimizer = optimizers.SGD(self.w_policy, self.step_size)
-        print("Initialization of ARS complete.")
+        # print("Initialization of ARS complete.")
 
     def aggregate_rollouts(self, num_rollouts=None, evaluate=False):
         """ 
@@ -262,10 +262,10 @@ class ARSLearner(object):
         deltas_idx = np.array(deltas_idx)
         rollout_rewards = np.array(rollout_rewards, dtype=np.float64)
 
-        print('Maximum reward of collected rollouts:', rollout_rewards.max())
-        t2 = time.time()
+        # print('Maximum reward of collected rollouts:', rollout_rewards.max())
+        # t2 = time.time()
 
-        print('Time to generate rollouts:', t2 - t1)
+        # print('Time to generate rollouts:', t2 - t1)
 
         if evaluate:
             return rollout_rewards
@@ -283,15 +283,15 @@ class ARSLearner(object):
         # normalize rewards by their standard deviation
         rollout_rewards /= np.std(rollout_rewards)
 
-        t1 = time.time()
+        # t1 = time.time()
         # aggregate rollouts to form g_hat, the gradient used to compute SGD step
         g_hat, count = utils.batched_weighted_sum(
             rollout_rewards[:, 0] - rollout_rewards[:, 1],
             (self.deltas.get(idx, self.w_policy.size) for idx in deltas_idx),
             batch_size=500)
         g_hat /= deltas_idx.size
-        t2 = time.time()
-        print('time to aggregate rollouts', t2 - t1)
+        # t2 = time.time()
+        # print('time to aggregate rollouts', t2 - t1)
         return g_hat
 
     def train_step(self):
@@ -300,7 +300,7 @@ class ARSLearner(object):
         """
 
         g_hat = self.aggregate_rollouts()
-        print("Euclidean norm of update step:", np.linalg.norm(g_hat))
+        # print("Euclidean norm of update step:", np.linalg.norm(g_hat))
         self.w_policy -= self.optimizer._compute_step(g_hat).reshape(
             self.w_policy.shape)
         return
@@ -314,8 +314,8 @@ class ARSLearner(object):
             t1 = time.time()
             self.train_step()
             t2 = time.time()
-            print('total time of one step', t2 - t1)
-            print('iter ', i, ' done')
+            # print('total time of one step', t2 - t1)
+            # print('iter ', i, ' done')
 
             # record statistics every 10 iterations
             rewards = self.aggregate_rollouts(num_rollouts=100, evaluate=True)
@@ -323,7 +323,7 @@ class ARSLearner(object):
 
             if ((i + 1) % 10 == 0):
                 w = ray.get(self.workers[0].get_weights_plus_stats.remote())
-                np.savez(self.logdir + "/lin_policy_plus", w)
+                # np.savez(self.logdir + "/lin_policy_plus", w)
 
                 logz.log_tabular("Time", time.time() - start)
                 logz.log_tabular("Iteration", i + 1)
@@ -357,7 +357,7 @@ class ARSLearner(object):
             # waiting for increment of all workers
             ray.get(increment_filters_ids)
             t2 = time.time()
-            print('Time to sync statistics:', t2 - t1)
+            # print('Time to sync statistics:', t2 - t1)
 
         return list(range(num_iter)), iter_scores
 
@@ -369,7 +369,7 @@ class Hyperparameters:
     step_size = 0.02
     delta_std = 0.03
     n_workers = 1
-    rollout_length = 1000
+    rollout_length = 240
     shift = 0
     seed = 237
     policy_type = 'linear'
@@ -378,16 +378,14 @@ class Hyperparameters:
 
 
 def run_ars(env_name='MountainCarContinuous-v0',
-            save=None,
-            progress=True,
-            debug=False,
-            render=False,
             logdir='data',
             **algorithm_hyperparameters):
 
-    # Ray init
-    local_ip = socket.gethostbyname(socket.gethostname())
-    ray.init(redis_address=local_ip + ':6379')
+    # Ray init?
+    if not ray.is_initialized():
+        # local_ip = socket.gethostbyname(socket.gethostname())
+        # ray.init(redis_address=local_ip + ':6379', local_mode=True)
+        ray.init(local_mode=True)
 
     # Params
     hp = Hyperparameters()
