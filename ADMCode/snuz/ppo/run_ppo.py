@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test games with flowing actions."""
 import os
 import errno
