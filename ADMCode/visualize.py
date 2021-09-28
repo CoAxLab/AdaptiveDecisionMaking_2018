@@ -44,8 +44,8 @@ def build_ddm_axis(parameters, maxtime=1.5):
     plt.setp(axx1, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
     plt.setp(axx2, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
     axx2.invert_yaxis()
-    axx1.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
-    axx2.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
+    axx1.hist([0], density=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
+    axx2.hist([0], density=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
 
     for axx in [axx1, axx2]:
         for spine in ['top', 'left', 'bottom', 'right']:
