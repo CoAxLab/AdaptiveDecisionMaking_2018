@@ -41,11 +41,11 @@ def build_ddm_axis(parameters, maxtime=1.5):
     divider = make_axes_locatable(ax)
     axx1 = divider.append_axes("top", size=1.2, pad=0.0, sharex=ax)
     axx2 = divider.append_axes("bottom", size=1.2, pad=0.0, sharex=ax)
-    plt.setp(axx1, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
-    plt.setp(axx2, xlim=(xmin - 51, w + 1))#ylim=(0 - (.01 * a), a + (.01 * a)))
+    plt.setp(axx1, xlim=(xmin - 51, w + 1),ylim=(0 - (.01 * a), a + (.01 * a)))
+    plt.setp(axx2, xlim=(xmin - 51, w + 1),ylim=(0 - (.01 * a), a + (.01 * a)))
     axx2.invert_yaxis()
-    axx1.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
-    axx2.hist([0], normed=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
+    axx1.hist([0], density=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
+    axx2.hist([0], density=False, bins=np.linspace(200, w, num=9), alpha=1., color='White')
 
     for axx in [axx1, axx2]:
         for spine in ['top', 'left', 'bottom', 'right']:
@@ -90,7 +90,7 @@ def compare_drift_effects(df, param_list):
     f=None
     for i, dfi in enumerate([sDF, nDF]):
         clrs = colors[i]
-        f = plot_ddm_sims(dfi, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0], kdeplot=False)
+        f = plot_ddm_sims(dfi, param_list[i], colors=clrs, plot_v=True, fig=f, vcolor=clrs[0], kdeplot=True)#False)
 
     ax, axx1, axx2 = f.axes
     xmin = trSteps-100
@@ -115,11 +115,12 @@ def plot_bound_rts(df, parameters, f, colors=None, kdeplot=True):
     if colors is None:
         colors = ['#3572C6', '#e5344a']
     ax, axx1, axx2 = f.axes
-    clip = (df.rt.min()/dt, deadline)
+    clip = (df.rt.min()/dt, deadline/dt)
 
     if kdeplot:
-        sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True, clip=clip, bw=15)
-        sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True, clip=clip, bw=15)
+        #print('kdeplot')
+        sns.kdeplot(rt1, alpha=.5, linewidth=0, color=colors[0], ax=axx1, shade=True, clip=clip)#, bw=15)
+        sns.kdeplot(rt0, alpha=.5, linewidth=0, color=colors[1], ax=axx2, shade=True, clip=clip)#, bw=15)
 
         ymax = (.005, .01)
         if rt1.size < rt0.size:
@@ -129,8 +130,10 @@ def plot_bound_rts(df, parameters, f, colors=None, kdeplot=True):
         # axx2.invert_yaxis()
 
     else:
-        sns.distplot(rt1, color=colors[0], ax=axx1, kde=False, norm_hist=False)
-        sns.distplot(rt0, color=colors[1], ax=axx2, kde=False, norm_hist=False)
+        #print('not_kdeplot')
+        #print(repr(rt1))
+        sns.histplot(rt1, color=colors[0], ax=axx1, kde=False)#, norm_hist=False)
+        sns.histplot(rt0, color=colors[1], ax=axx2, kde=False)#, norm_hist=False)
 
 
 def plot_traces(df, parameters, traces, f, colors):
