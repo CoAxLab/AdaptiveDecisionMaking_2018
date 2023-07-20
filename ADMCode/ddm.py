@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import pandas as pd
 import numba as nb
-from numba.decorators import jit
+from numba import jit
 from numpy.random import random_sample
 from numba import float64, int64, vectorize, boolean
 
